@@ -6,7 +6,7 @@ namespace Dazinator.Extensions.Http
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
-    public static class HttpClientOptionsServiceCollectionExtensions
+      public static class HttpClientOptionsServiceCollectionExtensions
     {
 
         public static IServiceCollection AddHttpClientHandlerRegistry(this IServiceCollection services, Action<HandlerRegistryBuilder> registerHandlers)
@@ -77,7 +77,7 @@ namespace Dazinator.Extensions.Http
         public static IHttpClientBuilder ConfigureOptions<TOptions>(this IHttpClientBuilder builder, Action<TOptions> configure)
             where TOptions : class
         {
-            builder.Services.Configure<TOptions>(builder.Name, configure);
+            builder.Services.Configure(builder.Name, configure);
             return builder;
         }
 
@@ -167,19 +167,29 @@ namespace Dazinator.Extensions.Http
 
         }
 
+        /// <summary>
+        /// Register a hook that will configure the options for a specific handler for a specic http client, based on the configuration section convention: HttpClient:{HttpClientName}:{HandlerName}
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="config"></param>
+        /// <param name="handlerConfigSectionName"></param>
+        /// <param name="allowFallbackToNonHttpClientSpecificConfiguration"></param>
+        /// <typeparam name="THandlerOptions"></typeparam>
+        /// <returns></returns>
+        public static IServiceCollection ConfigureHandlerOptionsPerHttpClient<THandlerOptions>(this IServiceCollection services, IConfiguration config, string handlerConfigSectionName, bool allowFallbackToNonHttpClientSpecificConfiguration = true)
+            where THandlerOptions : class
+        {
+            services.AddSingleton<IConfigureOptions<THandlerOptions>, ConfigureHttpClientHandlerOptionsFromHttpClientSpecificConfigurationSection<THandlerOptions>>(sp => new ConfigureHttpClientHandlerOptionsFromHttpClientSpecificConfigurationSection<THandlerOptions>(handlerConfigSectionName, allowFallbackToNonHttpClientSpecificConfiguration, config, sp.GetRequiredService<ILogger<ConfigureHttpClientHandlerOptionsFromHttpClientSpecificConfigurationSection<THandlerOptions>>>()));
+            return services;
+        }
 
-        ///// <summary>
-        ///// Fluent helper method for configuring builder without breaking method chaining.
-        ///// </summary>
-        ///// <param name="builder"></param>
-        ///// <param name="configure"></param>
-        ///// <returns></returns>
-        ///// <<remarks>This is useful so when ncalling AddHttpClient() to configure a named http client, you can chain .WithBuilder() to make use of the builders httpclient Name property whilst confiugirnng its services.</remarks>
-        //public static IHttpClientBuilder WithBuilder(this IHttpClientBuilder builder, Action<IHttpClientBuilder> configure)
-        //{
-        //    configure?.Invoke(builder);
-        //    return SetupFromHttpClientOptions(builder);
-        //}
+
+        public static IServiceCollection ConfigureHandlerOptionsUsingConfiguration(this IServiceCollection services, IConfiguration configuration, Action<ConfigureHandlerOptionsBuilder> configure)
+        {
+            var builder = new ConfigureHandlerOptionsBuilder(services, configuration);
+            configure?.Invoke(builder);
+            return services;
+        }
 
     }
 }

@@ -8,11 +8,7 @@ What if within your application, you want to allow the configuration for the `Ht
 
 This library addresses this problem, not through allowing you to "mutate" any existing objects thats `IHttpClientFactory` knows about, but instead, allowing you to introduce newly named `HttpClient`s which will be lazily built on demand. You can therefore request a named http client with a name like "foo-v1" and then later, when you know you have new confiugration to apply, you can request "foo-v2" and at that point a new http client will be built and you can apply the latest configuration during that process.
 
-Technically, although you only really need `Dazinator.Extensions.Options` as the key enabler to solve this problem - see that repo for details, this library builds upon the raw capability added there, to provide some additional capabilities, to make things more easily consumable, and easier to configure http clients, with concepts such as handlers etc.
-
 ## Usage
-
-Import nuget package `Dazinator.Extensions.Http`
 
 There are different usage patterns, starting simple then varying in sophistication.
 
@@ -117,15 +113,15 @@ The simpler options object is easier to configure that manipulating the HttpClie
 
 ## Aven more advanced - using the Handler registry to map reusable handlers.
 
-A powerful feature for being able to map different handlers to different clients is available. 
+A powerful feature for being able to map different handlers to different clients is available.
 Each handler can be configured differently per named http client.
 
 The following is a walkthrough of creating a custom handler, and usig it with a couple of different http clients, and confiugring it with different options for each.
 
-1. Create the handler. 
-Here is an example generic handler that simply invokes invokes whatever Func you supply in the constructor. 
-It also gets passed in the http client name, and takes an `IOptionsMontitor<TOptions>`. By injecting these two services we can have the handler load its options for the specific named http client, or fall back to a default set of options.
-This allows us to control its behaviour for each named http client by ensuring we configure its named options for that http client name.
+1. Create the handler.
+   Here is an example generic handler that simply invokes invokes whatever Func you supply in the constructor.
+   It also gets passed in the http client name, and takes an `IOptionsMontitor<TOptions>`. By injecting these two services we can have the handler load its options for the specific named http client, or fall back to a default set of options.
+   This allows us to control its behaviour for each named http client by ensuring we configure its named options for that http client name.
 
 
 ```cs
@@ -220,7 +216,7 @@ In the scenario above:-
 
 1. The handler I have implemented allows for different options based on the http client name. It's a useful pattern for me so I chose to demo it, it may not be necessary in your handlers.
 
-When using `ConfigureHttpClientOptions` you do not know the http client name in advance. In this scenario, you must also configure the handler's options in such a way that it can be configured at request time for whatever th http client name is that is requested at runtime. We do this using the `ConfigureUponRequest` extension method provided by `Dazinator.Extensions.Options` dependency:
+When using `ConfigureHttpClientOptions` you do not know the http client name in advance. In this scenario, you must also configure the handler's options in such a way that it can be configured at request time for whatever th http client name is that is requested at runtime. We do this using the `ConfigureUponRequest` extension method:
 
 ```cs
 

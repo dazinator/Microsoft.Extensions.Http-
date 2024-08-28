@@ -4,18 +4,26 @@ namespace Dazinator.Extensions.Http
 
     public class HandlerRegistryBuilder
     {
-
-        public HandlerRegistryBuilder(IServiceCollection services, HttpClientHandlerRegistry registry)
+        public HandlerRegistryBuilder(
+            IServiceCollection services,
+            // IConfiguration configuration,
+            HttpClientHandlerRegistry registry
+        )
         {
+            // Configuration = configuration;
+            // Services = services;
             Services = services;
             Registry = registry;
         }
 
         public IServiceCollection Services { get; }
-        internal HttpClientHandlerRegistry Registry { get; }
+
+        //public IConfiguration Configuration { get; }
+        public HttpClientHandlerRegistry Registry { get; }
+
 
         /// <summary>
-        /// Register handler with custom factory. Use this to control how the instance of the handler is created, and create different instances based on the 
+        /// Register handler with custom factory. Use this to control how the instance of the handler is created, and create different instances based on the
         /// named http client being configured.
         /// </summary>
         /// <typeparam name="THandler"></typeparam>
@@ -24,32 +32,8 @@ namespace Dazinator.Extensions.Http
         public HandlerRegistryBuilder Register<THandler>(string handlerName, Action<HttpClientHandlerRegistration> configure)
             where THandler : DelegatingHandler
         {
-            var registration = new HttpClientHandlerRegistration();
-            // registration.Factory = (sp, httpClientName) => ActivatorUtilities.CreateInstance<THandler>(sp, httpClientName); // sp.GetRequiredService<THandler>();
-            configure(registration);
-            registration.EnsureIsValid();
-            Registry.RegisteredHandlers.Add(handlerName, registration);
+            Registry.Register<THandler>(handlerName, configure);
             return this;
         }
-
-        /// <summary>
-        /// Register handler with custom factory. Use this to control how the instance of the handler is created, and create different instances based on the 
-        /// named http client being configured.
-        /// </summary>
-        /// <typeparam name="THandler"></typeparam>
-        /// <param name="handlerName"></param>
-        /// <param name="configure"></param>
-        public HandlerRegistryBuilder Register<THandler>(string handlerName, Action<IServiceCollection, HttpClientHandlerRegistration> configure)
-            where THandler : DelegatingHandler
-        {
-            var registration = new HttpClientHandlerRegistration();
-            // registration.Factory = (sp, httpClientName) => ActivatorUtilities.CreateInstance<THandler>(sp, httpClientName); // sp.GetRequiredService<THandler>();
-            configure(Services, registration);
-            registration.EnsureIsValid();
-            Registry.RegisteredHandlers.Add(handlerName, registration);
-            return this;
-        }
-
     }
-
 }
